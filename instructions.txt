@@ -1,0 +1,5 @@
+Express
+-------
+
+npm i -S express
+npm i -D nodemon > to watch server fiele changes and auto rerun plus etc.
