@@ -68,7 +68,7 @@ function verifyUser(req, res, next){
 }
 
 
-//file download
+//file download response
 app.get('*.json', function(req,res){
     res.download('./users/' + req.path);
 })
