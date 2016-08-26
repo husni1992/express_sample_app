@@ -54,7 +54,31 @@ app.get('/', function (req, res) {
   })
 })
 
-app.get('/:username', function (req, res) {
+function verifyUser(req, res, next){
+    var fp = getUserFilePath(req.params.username);
+    
+    fs.exists(fp, function(yes){
+        if(yes){
+            next();
+        }else{
+//            next('route'); this will hit the next get function in the code
+            res.redirect('/error/' + req.params.username);
+        }
+    })
+}
+
+
+//file download
+app.get('*.json', function(req,res){
+    res.download('./users/' + req.path);
+})
+
+app.route('/:username')
+.all(function(req, res, next){
+    console.log(req.method, 'for', req.params.username);
+    next();
+})
+.get(verifyUser, function (req, res) {
   var username = req.params.username
   var user = getUser(username)
   res.render('user', {
@@ -62,20 +86,30 @@ app.get('/:username', function (req, res) {
     address: user.location
   })
 })
-
-app.put('/:username', function (req, res) {
+.put(function (req, res) {
   var username = req.params.username
   var user = getUser(username)
   user.location = req.body
   saveUser(username, user)
   res.end()
 })
-
-app.delete('/:username', function (req, res) {
+.delete(function (req, res) {
   var fp = getUserFilePath(req.params.username)
   fs.unlinkSync(fp) // delete the file
   res.sendStatus(200)
 })
+
+//get json data with this route
+app.get('/data/:username', function(req, res){
+    var username = req.params.username;
+    var user = getUser(username);
+    res.json(user);
+})
+
+app.get('/error/:username', function(req, res){
+    res.status(404).send('No user named ' + req.params.username + ' can be found.');
+})
+
 
 var server = app.listen(5000, function () {
   console.log('Server running at http://localhost:' + server.address().port)
